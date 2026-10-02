@@ -1,8 +1,30 @@
+#include "BluetoothSerial.h"
+
+String deviceName = "PsycheRoverESP32";
 uint32_t targetFreq = 5270;
 uint8_t LEDCPin = 18;
 uint8_t resolution = 12;
 uint32_t maxDutySteps = (1 << resolution) - 1;
 uint32_t dutyCycle = maxDutySteps * 0.25;
+
+#if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
+  #error Bluetooth is not enabled! Please run 'make menuconfig' to enable it
+#endif
+
+#if !defined(CONFIG_BT_SPP_ENABLED)
+  #error Serial Port Profile for Bluetooth is not avilable or not enabled. It is only available for the ESP32 chip.
+#endif
+
+BluetoothSerial SerialBT
+
+#define BT_DISCOVER_TIME 10000
+
+static bool BT_SCAN_ASYNC = true;
+
+void BTAdvertisedDeviceFound(BTAdvertisedDevice* pDevice)
+{
+  Serial.printf("Found a device asynchronously: %s\n", pDevice->toString().c_str());
+}
 
 void changeDutyCycle(int val)
 {
@@ -52,16 +74,34 @@ void setup()
 {
   Serial.begin(115200);
   Serial.setTimeout(50);
+  SerialBT.begin(deviceName);
+  //SerialBT.deleteAllBondedDevices();
+  Serial.printf("The device with name \"%s\" is started.\nNow you can pair it with Bluetooth!\n", deviceName.c_str());
 
   ledcAttach(LEDCPin, targetFreq, resolution);
   ledcWrite(LEDCPin, dutyCycle);
   Serial.println("Starting VLF Detector software.");
+
+  if(btScanAsync)
+  {
+    Serial.print("Starting asynchronous discovery...\n");
+    if(SerialBT.discoverAsync(BTAdvertisedDeviceFound))
+    {
+      delay(10000);
+      Serial.print("Stopping discoverAsync...   ");
+      SerialBT.discoverAsyncStop();
+      Serial.println("Stopped.");
+    }
+    else
+      Serial.println("Error on discoverAsync f.e. not working after a \"connect\"");
+  }
 }
 
 void loop() 
 {
   if(Serial.available() > 0)
   {
+    SerialBT.write(Serial.read());
     String input = Serial.readStringUntil('\n');
     input.trim();
     input.toUpperCase();
@@ -84,6 +124,12 @@ void loop()
     }
     else if(input == "HELP")
       help();
+  }
+
+  if(SerialBT.available())
+  {
+    Serial.write(SerialBT.read());
+    delay(20);
   }
 
   yield();
