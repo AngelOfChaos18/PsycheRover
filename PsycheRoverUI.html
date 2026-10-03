@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>PsycheRoverUI</title>
+        <link rel="stylesheet" type="text/css" href="./PsycheRoverUI.css">
+        <script src="./PsycheRoverUI.js" defer></script>
+    </head>
+    <body>
+        <header>
+            <h1>VLF Controls</h1>
+        </header>
+        <section class="controls">
+            <div class="control-group">
+                <div class="lableRow">
+                    <h2>Duty Cycle</h2>
+                    <div class="inputUnit">
+                        <input type="number" id="dutyCycleInput" min="0" max="100" value="50">
+                        <span>%</span>
+                    </div>
+                </div>
+                <input type="range" id="dutyCycle" min="0" max="100" value="50">
+            </div>
+            
+            <div class="control-group">
+                <div class="lableRow">
+                    <h2>frequency</h2>
+                    <div class="inputUnit">
+                        <input type="number" id="freqInput" min="1000" max="10000" value="5270">
+                        <span>Hz</span>
+                    </div>
+                </div>
+                <input type="range" id="frequency" min="1000" max="10000" value="5270">
+            </div>
+            
+            <div class="control-group">
+                <div class="lableRow">
+                    <h2>Resolution</h2>
+                    <div class="inputUnit">
+                        <input type="number" id="resolutionInput" min="10" max="13" value="12">
+                    </div>
+                </div>
+                <input type="range" id="resolution" min="10" max="13" value="12">
+            </div>
+        </section>
+    </body>
+</html>
