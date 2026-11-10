@@ -6,6 +6,14 @@ connectionPageButton.addEventListener("click", (event) => {
     window.location.href="index.html";
 });
 
+piDataButton.addEventListener('click', (event) => {
+    window.location.href="PIData.html";
+});
+
+driveControlsButton.addEventListener('click', (event) => {
+    window.location.href="RoverDriveControls.html";
+});
+
 function setupControl(sliderId, inputId) {
     const slider = document.getElementById(sliderId);
     const input = document.getElementById(inputId);

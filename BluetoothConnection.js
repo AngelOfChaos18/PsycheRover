@@ -34,6 +34,14 @@ vlfControlsButton.addEventListener('click', (event) => {
     window.location.href="VLFControls.html";
 });
 
+piDataButton.addEventListener('click', (event) => {
+    window.location.href="PIData.html";
+});
+
+driveControlsButton.addEventListener('click', (event) => {
+    window.location.href="RoverDriveControls.html";
+});
+
 // Check if BLE is available in your Browser
 function isWebBluetoothEnabled() 
 {
