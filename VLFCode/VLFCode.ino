@@ -1,6 +1,20 @@
-#include "BluetoothSerial.h"
+#include <BLEDevice.h>
+#include <BLEServer.h>
+#include <BLEUtils.h>
+#include <BLE2902.h>
 
-static bool BT_SCAN_ASYNC = true;
+BLEServer* pServer = NULL;
+BLECharacteristic* frequencyCharacteristic = NULL;
+BLECharacteristic* resolutionCharacteristic = NULL;
+BLECharacteristic* dutyCycleCharacteristic = NULL;
+bool deviceConnected = false;
+bool oldDeviceConnected = false;
+
+#define SERVICE_UUID        "3e878e35-49e2-4e5c-8d32-11dd9b0409d8"
+#define FREQUENCY_CHARACTERISTIC_UUID "3e878e35-49e2-4e5c-8d32-11dd9b0409d8"
+#define RESOLUTION_CHARACTERISTIC_UUID "3e878e35-49e2-4e5c-8d32-11dd9b0409d8"
+#define DUTY_CYCLE_CHARACTERISTIC_UUID "3e878e35-49e2-4e5c-8d32-11dd9b0409d8"
+
 static int NUMBER_OF_COMMANDS = 7;
 
 String deviceName = "PsycheRoverESP32";
@@ -21,22 +35,33 @@ uint8_t resolution = 12;
 uint32_t maxDutySteps = (1 << resolution) - 1;
 uint32_t dutyCycle = maxDutySteps * 0.25;
 
-#if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
-  #error Bluetooth is not enabled! Please run 'make menuconfig' to enable it
-#endif
-
-#if !defined(CONFIG_BT_SPP_ENABLED)
-  #error Serial Port Profile for Bluetooth is not avilable or not enabled. It is only available for the ESP32 chip.
-#endif
-
-BluetoothSerial SerialBT;
-
-#define BT_DISCOVER_TIME 10000
-
-void BTAdvertisedDeviceFound(BTAdvertisedDevice* pDevice)
+class MyServerCallbacks: public BLEServerCallbacks 
 {
-  Serial.printf("Found a device asynchronously: %s\n", pDevice->toString().c_str());
-}
+  void onConnect(BLEServer* pServer) 
+  {
+    deviceConnected = true;
+  };
+
+  void onDisconnect(BLEServer* pServer) 
+  {
+    deviceConnected = false;
+  }
+};
+
+class MyCharacteristicCallbacks : public BLECharacteristicCallbacks 
+{
+  void onWrite(BLECharacteristic* frequencyCharacteristic) 
+  {
+    String value = frequencyCharacteristic->getValue();
+    if (value.length() > 0) 
+    {
+      Serial.print("Characteristic event, written: ");
+      Serial.println(static_cast<int>(value[0]));
+
+      int receivedValue = static_cast<int>(value[0]);
+    }
+  }
+};
 
 void changeDutyCycle(int val)
 {
@@ -137,33 +162,87 @@ void ExecutCommand(String command, int value)
 
 void setup() 
 {
-  Serial.begin(115200);
-  Serial.setTimeout(50);
-  SerialBT.begin(deviceName);
-  //SerialBT.deleteAllBondedDevices();
-  Serial.printf("The device with name \"%s\" is started.\nNow you can pair it with Bluetooth!\n", deviceName.c_str());
+  BLEDevice::init(deviceName);
+
+  pServer = BLEDevice::createServer();
+  pServer->setCallbacks(new MyServerCallbacks());
+
+  BLEService *pService = pServer->createService(SERVICE_UUID);
+
+  frequencyCharacteristic = pService->createCharacteristic(
+                      FREQUENCY_CHARACTERISTIC_UUID,
+                      BLECharacteristic::PROPERTY_READ   |
+                      BLECharacteristic::PROPERTY_WRITE  |
+                      BLECharacteristic::PROPERTY_NOTIFY |
+                      BLECharacteristic::PROPERTY_INDICATE
+                    );
+
+  resolutionCharacteristic = pService->createCharacteristic(
+                      RESOLUTION_CHARACTERISTIC_UUID,
+                      BLECharacteristic::PROPERTY_READ   |
+                      BLECharacteristic::PROPERTY_WRITE  |
+                      BLECharacteristic::PROPERTY_NOTIFY |
+                      BLECharacteristic::PROPERTY_INDICATE
+                    );
+
+  dutyCycleCharacteristic = pService->createCharacteristic(
+                      DUTY_CYCLE_CHARACTERISTIC_UUID,
+                      BLECharacteristic::PROPERTY_READ   |
+                      BLECharacteristic::PROPERTY_WRITE  |
+                      BLECharacteristic::PROPERTY_NOTIFY |
+                      BLECharacteristic::PROPERTY_INDICATE
+                    );
+
+  frequencyCharacteristic->setCallbacks(new MyCharacteristicCallbacks());
+  resolutionCharacteristic->setCallbacks(new MyCharacteristicCallbacks());
+  dutyCycleCharacteristic->setCallbacks(new MyCharacteristicCallbacks());
+
+  frequencyCharacteristic->addDescriptor(new BLE2902());
+  resolutionCharacteristic->addDescriptor(new BLE2902());
+  dutyCycleCharacteristic->addDescriptor(new BLE2902());
+
+  pService->start();
+
+  BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
+  pAdvertising->addServiceUUID(SERVICE_UUID);
+  pAdvertising->setScanResponse(false);
+  pAdvertising->setMinPreferred(0x00);  // set value to 0x00 to not advertise this parameter
+  BLEDevice::startAdvertising();
+  Serial.println("Waiting a client connection to notify...");
 
   ledcAttach(LEDCPin, targetFreq, resolution);
   ledcWrite(LEDCPin, dutyCycle);
   Serial.println("Starting VLF Detector software.");
-
-  if(BT_SCAN_ASYNC)
-  {
-    Serial.print("Starting asynchronous discovery...\n");
-    if(SerialBT.discoverAsync(BTAdvertisedDeviceFound))
-    {
-      delay(10000);
-      Serial.print("Stopping discoverAsync...   ");
-      SerialBT.discoverAsyncStop();
-      Serial.println("Stopped.");
-    }
-    else
-      Serial.println("Error on discoverAsync f.e. not working after a \"connect\"");
-  }
 }
 
 void loop() 
 {
+  if (deviceConnected) 
+  {
+    frequencyCharacteristic->setValue(String(value).c_str());
+    frequencyCharacteristic->notify();
+    value++;
+    Serial.print("New value notified: ");
+    Serial.println(value);
+    delay(3000); // bluetooth stack will go into congestion, if too many packets are sent, in 6 hours test i was able to go as low as 3ms
+  }
+
+  if (!deviceConnected && oldDeviceConnected) 
+  {
+    Serial.println("Device disconnected.");
+    delay(500); // give the bluetooth stack the chance to get things ready
+    pServer->startAdvertising(); // restart advertising
+    Serial.println("Start advertising");
+    oldDeviceConnected = deviceConnected;
+  }
+
+  if (deviceConnected && !oldDeviceConnected) 
+  {
+    // do stuff here on connecting
+    oldDeviceConnected = deviceConnected;
+    Serial.println("Device Connected");
+  }
+  
   if(Serial.available() > 0)
   {
     String input = Serial.readStringUntil('\n');
