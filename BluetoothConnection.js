@@ -1,7 +1,7 @@
 const connectButton = document.getElementById('connectBleButton');
 const disconnectButton = document.getElementById('disconnectBleButton');
 const vlfControlsButton = document.getElementById('vlfControls');
-const piDataButton = document.getElementById('piReadings')
+const piDataButton = document.getElementById('piReadings');
 const driveControlsButton = document.getElementById('driveControls');
 const retrievedValue = document.getElementById('valueContainer');
 const latestValueSent = document.getElementById('valueSent');
@@ -21,7 +21,8 @@ var sensorCharacteristicFound;
 
 // Connect Button (search for BLE Devices only if BLE is available)
 connectButton.addEventListener('click', (event) => {
-    if (isWebBluetoothEnabled()){
+    if (isWebBluetoothEnabled())
+    {
         connectToDevice();
     }
 });
@@ -31,7 +32,7 @@ disconnectButton.addEventListener('click', disconnectDevice);
 
 vlfControlsButton.addEventListener('click', (event) => {
     <a href="VLFControls.html">Goes to VLF Controls Page</a>
-})
+});
 
 // Check if BLE is available in your Browser
 function isWebBluetoothEnabled() 
