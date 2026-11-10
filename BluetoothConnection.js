@@ -31,7 +31,7 @@ connectButton.addEventListener('click', (event) => {
 disconnectButton.addEventListener('click', disconnectDevice);
 
 vlfControlsButton.addEventListener('click', (event) => {
-    <a href="VLFControls.html">Goes to VLF Controls Page</a>
+    window.location.href="VLFControls.html";
 });
 
 // Check if BLE is available in your Browser
