@@ -1,7 +1,8 @@
 const connectButton = document.getElementById('connectBleButton');
 const disconnectButton = document.getElementById('disconnectBleButton');
-const onButton = document.getElementById('onButton');
-const offButton = document.getElementById('offButton');
+const vlfControlsButton = document.getElementById('vlfControls');
+const piDataButton = document.getElementById('piReadings')
+const driveControlsButton = document.getElementById('driveControls');
 const retrievedValue = document.getElementById('valueContainer');
 const latestValueSent = document.getElementById('valueSent');
 const bleStateContainer = document.getElementById('bleState');
@@ -28,9 +29,9 @@ connectButton.addEventListener('click', (event) => {
 // Disconnect Button
 disconnectButton.addEventListener('click', disconnectDevice);
 
-// Write to the ESP32 LED Characteristic
-onButton.addEventListener('click', () => writeOnCharacteristic(1));
-offButton.addEventListener('click', () => writeOnCharacteristic(0));
+vlfControlsButton.addEventListener('click', (event) => {
+    <a href="VLFControls.html">Goes to VLF Controls Page</a>
+})
 
 // Check if BLE is available in your Browser
 function isWebBluetoothEnabled() 
