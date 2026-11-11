@@ -8,6 +8,8 @@ BLECharacteristic* frequencyCharacteristic = NULL;
 BLECharacteristic* resolutionCharacteristic = NULL;
 BLECharacteristic* dutyCycleCharacteristic = NULL;
 BLECharacteristic* piDataArrayCharacteristic = NULL;
+BLECharacteristic* materialClassificationCharacteristic = NULL;
+BLECharacteristic* tauValueCharacteristic = NULL;
 bool deviceConnected = false;
 bool oldDeviceConnected = false;
 
@@ -16,20 +18,10 @@ bool oldDeviceConnected = false;
 #define RESOLUTION_CHARACTERISTIC_UUID "9034bce6-0e5b-484a-a281-54633a7704f2"
 #define DUTY_CYCLE_CHARACTERISTIC_UUID "2e645218-b656-4a16-92e9-c3d51359c0ad"
 #define PI_DATA_ARRAY_CHARACTERISTIC_UUID "fda96f74-ad2f-434a-9b01-d7ada3a184fc"
-
-static int NUMBER_OF_COMMANDS = 7;
+#define MATERIAL_CLASSIFICATION_CHARACTERISTIC_UUID "4ca99c04-2a91-4869-a03a-40c7b09e54e2"
+#define TAU_VALUE_CHARACTERISTIC_UUID "16ffa6d9-8e79-4807-ab34-7f9f20b75e99"
 
 String deviceName = "PsycheRoverESP32";
-
-String commandList[] = {
-  "List of avalible commands:",
-  "ChangeDutyCycle value - Will change duty cycle to % value entered. Only values 1-100 inclusive are valid.",
-  "ChangeFreq value - Will change the target frequency to value entered. Only values 1-10000 inclusive are valid.",
-  "ChangeResolution value - Will change the bit resolution to value entered. Only values 1-13 inclusive are valid.",
-  "GetDutyCycle - Will display the current Duty Cycle.",
-  "GetFreq - Will display the current Frequency.",
-  "GetResolution - Will display the current Resolution."
-};
 
 uint32_t targetFreq = 5270;
 uint8_t LEDCPin = 18;
@@ -61,6 +53,20 @@ class MyCharacteristicCallbacks : public BLECharacteristicCallbacks
       Serial.println(static_cast<int>(value[0]));
 
       int receivedValue = static_cast<int>(value[0]);
+      changeFreq(receivedValue);
+    }
+  }
+
+  void onWrite(BLECharacteristic* dutyCycleCharacteristic)
+  {
+    String value = dutyCycleCharacteristic->getValue();
+    if(value.length() > 0)
+    {
+      Serial.print("Characteristic event, written: ");
+      Serial.println(static_cast<int>(value[0]));
+
+      int receivedValue = static_cast<int>(value[0]);
+      changeDutyCycle(receivedValue);
     }
   }
 };
@@ -105,29 +111,6 @@ void changeResolution(int val)
   if(resolution != val)
   {
     Serial.println("Invalid parameter passed. Enter a number between 10-13 inclusive.");
-  }
-}
-
-void GetData(String data)
-{
-  String msg;
-  if(data == "GETDUTYCYCLE")
-    msg = String("Current Duty Cycle: " + String(dutyCycle));
-  else if(data == "GETFREQ")
-    msg = String("Current Frequency: " + String(targetFreq));
-  else if(data == "GETRESOLUTION")
-    msg = String("Current Resolution: " + String(resolution));
-  else
-    msg = "Invalid command, enter 'help' to see a list of commands";
-
-  Serial.println(msg);
-}
-
-void help()
-{
-  for(int i = 0; i < NUMBER_OF_COMMANDS; i++)
-  {
-    Serial.println(commandList[i]);
   }
 }
 
@@ -221,16 +204,36 @@ void setup()
                       BLECharacteristic::PROPERTY_NOTIFY |
                       BLECharacteristic::PROPERTY_INDICATE
                     );
+    
+    materialClassificationCharacteristic = pService->createCharacteristic(
+                      MATERIAL_CLASSIFICATION_CHARACTERISTIC_UUID,
+                      BLECharacteristic::PROPERTY_READ   |
+                      BLECharacteristic::PROPERTY_WRITE  |
+                      BLECharacteristic::PROPERTY_NOTIFY |
+                      BLECharacteristic::PROPERTY_INDICATE
+    )
+
+    tauValueCharacteristic = pService->createCharacteristic(
+                      TAU_VALUE_CHARACTERISTIC_UUID,
+                      BLECharacteristic::PROPERTY_READ   |
+                      BLECharacteristic::PROPERTY_WRITE  |
+                      BLECharacteristic::PROPERTY_NOTIFY |
+                      BLECharacteristic::PROPERTY_INDICATE
+    )
 
   frequencyCharacteristic->setCallbacks(new MyCharacteristicCallbacks());
   resolutionCharacteristic->setCallbacks(new MyCharacteristicCallbacks());
   dutyCycleCharacteristic->setCallbacks(new MyCharacteristicCallbacks());
   piDataArrayCharacteristic->setCallbacks(new MyCharacteristicCallbacks());
+  materialClassificationCharacteristic->setCallbacks(new MyCharacteristicCallbacks());
+  tauValueCharacteristic->setCallbacks(new MyCharacteristicCallbacks());
 
   frequencyCharacteristic->addDescriptor(new BLE2902());
   resolutionCharacteristic->addDescriptor(new BLE2902());
   dutyCycleCharacteristic->addDescriptor(new BLE2902());
   piDataArrayCharacteristic->addDescriptor(new BLE2902());
+  materialClassificationCharacteristic->addDescriptor(new BLE2920());
+  tauValueCharacteristic->addDescriptor(new BLE2920());
 
   pService->start();
 
@@ -250,10 +253,6 @@ void loop()
 {
   if (deviceConnected) 
   {
-    // frequencyCharacteristic->setValue(String(targetFreq).c_str());
-    // frequencyCharacteristic->notify();
-    // Serial.print("New value notified: ");
-    // Serial.println(targetFreq);
     GenerateRandomPIValues();
     delay(3000); // bluetooth stack will go into congestion, if too many packets are sent, in 6 hours test i was able to go as low as 3ms
   }
@@ -272,27 +271,6 @@ void loop()
     // do stuff here on connecting
     oldDeviceConnected = deviceConnected;
     Serial.println("Device Connected");
-  }
-  
-  if(Serial.available() > 0)
-  {
-    String input = Serial.readStringUntil('\n');
-    input.trim();
-    input.toUpperCase();
-
-    int spaceIndex = input.indexOf(' ');
-    if(spaceIndex > 1)
-    {
-      String command = input.substring(0, spaceIndex);
-      command.toUpperCase();
-      int value = input.substring(spaceIndex + 1).toInt();
-
-      ExecutCommand(command, value);
-    }
-    else if(input == "HELP")
-      help();
-    else if(input == "GETDUTYCYCLE" || input == "GETFREQ" || input == "GETRESOLUTION")
-      GetData(input);
   }
 
   yield();

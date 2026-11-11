@@ -1,4 +1,6 @@
 import {UpdatePIData} from "./PsycheRoverPIDataUI.js";
+import { UpdateMaterialClassification } from "./PsycheRoverPIDataUI.js";
+import { UpdateTau } from "./PsycheRoverPIDataUI.js";
 
 const connectButton = document.getElementById('connectBleButton');
 const disconnectButton = document.getElementById('disconnectBleButton');
@@ -15,16 +17,20 @@ var deviceName ='PsycheRoverESP32';
 var bleService = '3e878e35-49e2-4e5c-8d32-11dd9b0409d8';
 var frequencyCharacteristic = '280db291-af91-403c-9a8f-37d83135b49c';
 var resolutionCharacteristic = '9034bce6-0e5b-484a-a281-54633a7704f2';
-var dutyCycleCharacteristicCharacteristic = '2e645218-b656-4a16-92e9-c3d51359c0ad';
+var dutyCycleCharacteristic = '2e645218-b656-4a16-92e9-c3d51359c0ad';
 var piDataArrayCharacteristic = 'fda96f74-ad2f-434a-9b01-d7ada3a184fc';
+var materialClassificationCharacteristic = '4ca99c04-2a91-4869-a03a-40c7b09e54e2';
+var tauValueCharacteristic = '16ffa6d9-8e79-4807-ab34-7f9f20b75e99';
 
 //Global Variables to Handle Bluetooth
 var bleServer;
 var bleServiceFound;
 var piDataCharacteristicFound;
-var dutyCycleCharacteristicFound;
-var resolutionCharacteristicFound;
-var frequencyCharacteristicFound;
+export var dutyCycleCharacteristicFound;
+export var resolutionCharacteristicFound;
+export var frequencyCharacteristicFound;
+var materialClassificationCharacteristicFound;
+var tauValueCharacteristicFound;
 
 // Connect Button (search for BLE Devices only if BLE is available)
 connectButton.addEventListener('click', (event) => {
@@ -99,11 +105,44 @@ function connectToDevice()
         console.log("Notifications Started.");
         return characteristic.readValue();
     })
-    .then(value => {
-        console.log("Read value: ", value);
-        const decodedValue = new TextDecoder().decode(value);
-        console.log("Decoded value: ", decodedValue);
-        retrievedValue.innerHTML = decodedValue;
+    .then(() => {
+        return bleServiceFound.getCharacteristic(materialClassificationCharacteristic);
+    })
+    .then(characteristic => {
+        console.log("Characteristic discovered:", characteristic.uuid);
+        materialClassificationCharacteristicFound = characteristic;
+        characteristic.addEventListener('characteristicvaluechanged', handleCharacteristicChange);
+        characteristic.startNotifications();
+        console.log("Notifications Started.");
+        return characteristic.readValue();
+    })
+    .then(() => {
+        return bleServiceFound.getCharacteristic(tauValueCharacteristic);
+    })
+    .then(characteristic => {
+        console.log("Characteristic discovered:", characteristic.uuid);
+        tauValueCharacteristicFound = characteristic;
+        characteristic.addEventListener('characteristicvaluechanged', handleCharacteristicChange);
+        characteristic.startNotifications();
+        console.log("Notifications Started.");
+        return characteristic.readValue();
+    })
+    .then(() => {
+        return bleServiceFound.getCharacteristic(dutyCycleCharacteristic);
+    })
+    .then(characteristic => {
+        console.log("Characteristic discovered:", characteristic.uuid);
+        dutyCycleCharacteristicFound = characteristic;
+        return bleServiceFound.getCharacteristic(frequencyCharacteristic);
+    })
+    .then(characteristic => {
+        console.log("Characteristic discovered:", characteristic.uuid);
+        frequencyCharacteristicFound = characteristic;
+        return bleServiceFound.getCharacteristic(resolutionCharacteristic);
+    })
+    .then(characteristic => {
+        console.log("Characteristic discovered:", characteristic.uuid);
+        resolutionCharacteristicFound = characteristic;
     })
     .catch(error => {
         console.log('Error: ', error);
@@ -131,24 +170,37 @@ function handleCharacteristicChange(event)
 
         UpdatePIData(dataArray);
     }
+
+    if(event.target.uuid === materialClassificationCharacteristic)
+    {
+        console.log("change in mat. class.");
+        UpdateMaterialClassification(newValueReceived);
+    }
+
+    if(event.target.uuid === tauValueCharacteristic)
+    {
+        console.log("change in tau");
+        UpdateTau(newValueReceived);
+    }
 }
 
-function writeOnCharacteristic(value)
+export function writeOnCharacteristic(characteristicFound, value)
 {
     if (bleServer && bleServer.connected) 
     {
-        bleServiceFound.getCharacteristic(frequencyCharacteristic)
-        .then(characteristic => {
-            console.log("Found the LED characteristic: ", characteristic.uuid);
-            const data = new Uint8Array([value]);
-            return characteristic.writeValue(data);
-        })
+        if(!characteristicFound)
+        {
+            console.error("No characteristic object found.");
+            return;
+        }
+        
+        const data = new TextEncoder().encode(String(value));
+        characteristicFound.writeValue(data)
         .then(() => {
-            latestValueSent.innerHTML = value;
-            console.log("Value written to LEDcharacteristic:", value);
+            console.log("Value successfully written:", value);
         })
         .catch(error => {
-            console.error("Error writing to the LED characteristic: ", error);
+            console.error("Error writing to the characteristic: ", error);
         });
     } 
     else 

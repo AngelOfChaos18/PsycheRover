@@ -1,9 +1,23 @@
+import { writeOnCharacteristic } from "./BluetoothConnection.js";
+import { frequencyCharacteristicFound, dutyCycleCharacteristicFound , resolutionCharacteristicFound } from "./BluetoothConnection.js";
+
 function setupControl(sliderId, inputId) {
     const slider = document.getElementById(sliderId);
     const input = document.getElementById(inputId);
 
+    function SendValue(val)
+    {
+        if(sliderId === "frequency" || inputId === "freqInput")
+            writeOnCharacteristic(frequencyCharacteristicFound, val);
+        if(sliderId === "dutyCycle" || inputId === "dutyCycleInput" )
+            writeOnCharacteristic(dutyCycleCharacteristicFound, val);
+        if(sliderId === "resolution" || inputId === 'resolutionInput')
+            writeOnCharacteristic(resolutionCharacteristicFound, val);
+    }
+
     slider.addEventListener('input', (e) => {
         input.value = e.target.value;
+        sendValue(input.value);
     });
 
     input.addEventListener('input', (e) => {
@@ -16,6 +30,7 @@ function setupControl(sliderId, inputId) {
         if (val > max) val = max;
 
         slider.value = val;
+        SendValue(val);
     });
 }
 

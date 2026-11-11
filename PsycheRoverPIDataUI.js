@@ -31,7 +31,7 @@ let PIDataArray = [
 
 DrawGraph();
 UpdateMaterialClassification(material);
-UpdateTao(tau);
+UpdateTau(tau);
 
 
 function GetPixelX(xValue)
@@ -44,7 +44,7 @@ function GetPixelY(yValue)
     return (height - ((yValue - yMin) / (yMax - yMin)) * (height-(margin.top + margin.bottom))) - margin.bottom;
 }
 
-function UpdateMaterialClassification(materialValue)
+export function UpdateMaterialClassification(materialValue)
 {
     materialClassText.textContent = materialValue;
 }
@@ -62,7 +62,7 @@ export function UpdatePIData(newData)
     DrawGraph();
 }
 
-function UpdateTao(value)
+export function UpdateTau(value)
 {
     tauText.textContent = value;
 }
