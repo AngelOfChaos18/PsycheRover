@@ -53,7 +53,7 @@ export function UpdatePIData(newData)
 {
     for(let n = 0; n < 8; n++)
     {
-        PIDataArray[i][1] = newData[i];
+        PIDataArray[n][1] = newData[n];
     }
 
     DrawGraph();
