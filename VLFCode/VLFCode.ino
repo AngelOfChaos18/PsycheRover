@@ -42,35 +42,6 @@ class MyServerCallbacks: public BLEServerCallbacks
   }
 };
 
-class MyCharacteristicCallbacks : public BLECharacteristicCallbacks 
-{
-  void onWrite(BLECharacteristic* frequencyCharacteristic) 
-  {
-    String value = frequencyCharacteristic->getValue();
-    if (value.length() > 0) 
-    {
-      Serial.print("Characteristic event, written: ");
-      Serial.println(static_cast<int>(value[0]));
-
-      int receivedValue = static_cast<int>(value[0]);
-      changeFreq(receivedValue);
-    }
-  }
-
-  void onWrite(BLECharacteristic* dutyCycleCharacteristic)
-  {
-    String value = dutyCycleCharacteristic->getValue();
-    if(value.length() > 0)
-    {
-      Serial.print("Characteristic event, written: ");
-      Serial.println(static_cast<int>(value[0]));
-
-      int receivedValue = static_cast<int>(value[0]);
-      changeDutyCycle(receivedValue);
-    }
-  }
-};
-
 void changeDutyCycle(int val)
 {
   if(val >= 1 && val <= 100)
@@ -113,6 +84,30 @@ void changeResolution(int val)
     Serial.println("Invalid parameter passed. Enter a number between 10-13 inclusive.");
   }
 }
+
+class MyCharacteristicCallbacks : public BLECharacteristicCallbacks 
+{
+  void onWrite(BLECharacteristic* pCharacteristic) 
+  {
+    String value = pCharacteristic->getValue();
+    if (value.length() > 0) 
+    {
+      Serial.print("Characteristic event, written: ");
+      Serial.println(static_cast<int>(value[0]));
+
+      int receivedValue = static_cast<int>(value[0]);
+
+      if(pCharacteristic == frequencyCharacteristic)
+        changeFreq(receivedValue);
+
+      if(pCharacteristic == dutyCycleCharacteristic)
+        changeDutyCycle(receivedValue);
+
+      if(pCharacteristic == resolutionCharacteristic)
+        changeResolution(receivedValue);
+    }
+  }
+};
 
 void ExecutCommand(String command, int value)
 {
@@ -211,7 +206,7 @@ void setup()
                       BLECharacteristic::PROPERTY_WRITE  |
                       BLECharacteristic::PROPERTY_NOTIFY |
                       BLECharacteristic::PROPERTY_INDICATE
-    )
+    );
 
     tauValueCharacteristic = pService->createCharacteristic(
                       TAU_VALUE_CHARACTERISTIC_UUID,
@@ -219,7 +214,7 @@ void setup()
                       BLECharacteristic::PROPERTY_WRITE  |
                       BLECharacteristic::PROPERTY_NOTIFY |
                       BLECharacteristic::PROPERTY_INDICATE
-    )
+    );
 
   frequencyCharacteristic->setCallbacks(new MyCharacteristicCallbacks());
   resolutionCharacteristic->setCallbacks(new MyCharacteristicCallbacks());
@@ -232,8 +227,8 @@ void setup()
   resolutionCharacteristic->addDescriptor(new BLE2902());
   dutyCycleCharacteristic->addDescriptor(new BLE2902());
   piDataArrayCharacteristic->addDescriptor(new BLE2902());
-  materialClassificationCharacteristic->addDescriptor(new BLE2920());
-  tauValueCharacteristic->addDescriptor(new BLE2920());
+  materialClassificationCharacteristic->addDescriptor(new BLE2902());
+  tauValueCharacteristic->addDescriptor(new BLE2902());
 
   pService->start();
 

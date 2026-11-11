@@ -17,7 +17,7 @@ function setupControl(sliderId, inputId) {
 
     slider.addEventListener('input', (e) => {
         input.value = e.target.value;
-        sendValue(input.value);
+        SendValue(input.value);
     });
 
     input.addEventListener('input', (e) => {
