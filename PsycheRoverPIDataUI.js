@@ -54,6 +54,9 @@ export function UpdatePIData(newData)
     for(let n = 0; n < 8; n++)
     {
         PIDataArray[n][1] = newData[n];
+
+        if(newData[n] > yMax)
+            yMax = newData[n];
     }
 
     DrawGraph();
@@ -66,14 +69,15 @@ function UpdateTao(value)
 
 function DrawGraph()
 {
-    // 1. Draw the actual X and Y Axis Lines
+    ctx.clearRect(0, 0, width, height);
+
     ctx.beginPath();
     ctx.strokeStyle = "#acabab";
     ctx.lineWidth = 2;
-    // Y Axis line
+    
     ctx.moveTo(margin.left, margin.top);
     ctx.lineTo(margin.left, height - margin.bottom);
-    // X Axis line
+    
     ctx.lineTo(width - margin.right, height - margin.bottom);
     ctx.stroke();
 
