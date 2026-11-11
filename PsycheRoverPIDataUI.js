@@ -1,7 +1,6 @@
-const vlfControlsButton = document.getElementById('vlfControls');
-const connectionPageButton = document.getElementById('connectionPage');
-const driveControlsButton = document.getElementById('driveControls');
 const canvas = document.getElementById('decayGraph');
+const materialClassText = document.getElementById('materialClass');
+const tauText = document.getElementById('tauValue');
 
 const rows = 8;
 const columns = 2;
@@ -14,12 +13,12 @@ const xAxisLabelY = height - margin.bottom + 30;
 const yAxisLabelX = margin.left - 30;
 const yAxisLabelY = margin.top + (height - margin.top - margin.bottom) / 2;
 
+const timeInterval = 0.000005;
+
 let xMin = 0, xMax = 0.00004, yMin = 0, yMax = 6;
-
-
-tao = 0.001;
-timeInterval = 0.000005;
-PIDataArray = [
+let material = "Ferromagnetic";
+let tau = 0.001;
+let PIDataArray = [
     [0, 5.0],
     [timeInterval, 5.0],
     [2*timeInterval, 3.0],
@@ -30,19 +29,10 @@ PIDataArray = [
     [7*timeInterval, 0.00001]
 ];
 
-vlfControlsButton.addEventListener('click', (event) => {
-    window.location.href="VLFControls.html";
-});
-
-driveControlsButton.addEventListener('click', (event) => {
-    window.location.href="RoverDriveControls.html";
-});
-
-connectionPageButton.addEventListener("click", (event) => {
-    window.location.href="index.html";
-});
-
 DrawGraph();
+UpdateMaterialClassification(material);
+UpdateTao(tau);
+
 
 function GetPixelX(xValue)
 {
@@ -52,6 +42,16 @@ function GetPixelX(xValue)
 function GetPixelY(yValue)
 {
     return (height - ((yValue - yMin) / (yMax - yMin)) * (height-(margin.top + margin.bottom))) - margin.bottom;
+}
+
+function UpdateMaterialClassification(materialValue)
+{
+    materialClassText.textContent = materialValue;
+}
+
+function UpdateTao(value)
+{
+    tauText.textContent = value;
 }
 
 function DrawGraph()

@@ -30,16 +30,21 @@ connectButton.addEventListener('click', (event) => {
 // Disconnect Button
 disconnectButton.addEventListener('click', disconnectDevice);
 
-vlfControlsButton.addEventListener('click', (event) => {
-    window.location.href="VLFControls.html";
-});
-
-piDataButton.addEventListener('click', (event) => {
-    window.location.href="PIData.html";
-});
-
-driveControlsButton.addEventListener('click', (event) => {
-    window.location.href="RoverDriveControls.html";
+document.querySelectorAll('.nav-btn').forEach(button => {
+    button.addEventListener('click', (event) => {
+        const targetViewId = event.target.getAttribute('data-target');
+        
+        // Hide all views
+        document.querySelectorAll('.view').forEach(view => {
+            view.style.display = 'none';
+        });
+        
+        // Show the target view
+        const targetView = document.getElementById(targetViewId);
+        if (targetView) {
+            targetView.style.display = 'block';
+        }
+    });
 });
 
 // Check if BLE is available in your Browser

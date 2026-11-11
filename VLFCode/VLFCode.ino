@@ -70,14 +70,12 @@ void changeDutyCycle(int val)
     dutyCycle = maxDutySteps * (val / 100.0);
     String msg = String("Duty Cycle changed to " + String(dutyCycle));
     Serial.println(msg);
-    SerialBT.println(msg);
     ledcWrite(LEDCPin, dutyCycle);
   }
   else
   {
     String msg = "Invalid parameter passed. Enter a number between 1-100 inclusive.";
     Serial.println(msg);
-    SerialBT.println(msg);
   }
 }
 
@@ -87,11 +85,9 @@ void changeFreq(int val)
   ledcChangeFrequency(LEDCPin, targetFreq, resolution);
   String msg = String("Target Frequency changed to " + String(targetFreq));
   Serial.println(msg);
-  SerialBT.println(msg);
   if(targetFreq != val)
   {
     Serial.println("Invalid parameter passed. Enter a number between 1-10000 inclusive.");
-    SerialBT.println("Invalid parameter passed. Enter a number between 1-10000 inclusive.");
   }
 }
 
@@ -102,13 +98,11 @@ void changeResolution(int val)
   maxDutySteps = (1 << resolution) -1;
   String msg = String("Resolution changed to " + String(resolution));
   Serial.println(msg);
-  SerialBT.println(msg);
   changeDutyCycle(dutyPercent);
   ledcWrite(LEDCPin, dutyCycle);
   if(resolution != val)
   {
     Serial.println("Invalid parameter passed. Enter a number between 10-13 inclusive.");
-    SerialBT.println("Invalid parameter passed. Enter a number between 10-13 inclusive.");
   }
 }
 
@@ -125,7 +119,6 @@ void GetData(String data)
     msg = "Invalid command, enter 'help' to see a list of commands";
 
   Serial.println(msg);
-  SerialBT.println(msg);
 }
 
 void help()
@@ -133,7 +126,6 @@ void help()
   for(int i = 0; i < NUMBER_OF_COMMANDS; i++)
   {
     Serial.println(commandList[i]);
-    SerialBT.println(commandList[i]);
   }
 }
 
@@ -142,7 +134,6 @@ void ExecutCommand(String command, int value)
   if(command == "CHANGEDUTYCYCLE")
   {
     String commandText = String(command + " " + String(value));
-    SerialBT.println(commandText);
     changeDutyCycle(value);
   }
   else if(command == "CHANGEFREQ")
@@ -156,12 +147,13 @@ void ExecutCommand(String command, int value)
   else
   {
     Serial.println("Unknown command, for a list of commands enter 'help'");
-    SerialBT.println("Unknown command, for a list of commands enter 'help'");
   }
 }
 
 void setup() 
 {
+  Serial.begin(115200);
+
   BLEDevice::init(deviceName);
 
   pServer = BLEDevice::createServer();
@@ -205,7 +197,7 @@ void setup()
 
   BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
   pAdvertising->addServiceUUID(SERVICE_UUID);
-  pAdvertising->setScanResponse(false);
+  pAdvertising->setScanResponse(true);
   pAdvertising->setMinPreferred(0x00);  // set value to 0x00 to not advertise this parameter
   BLEDevice::startAdvertising();
   Serial.println("Waiting a client connection to notify...");
@@ -219,11 +211,10 @@ void loop()
 {
   if (deviceConnected) 
   {
-    frequencyCharacteristic->setValue(String(value).c_str());
+    frequencyCharacteristic->setValue(String(targetFreq).c_str());
     frequencyCharacteristic->notify();
-    value++;
     Serial.print("New value notified: ");
-    Serial.println(value);
+    Serial.println(targetFreq);
     delay(3000); // bluetooth stack will go into congestion, if too many packets are sent, in 6 hours test i was able to go as low as 3ms
   }
 
@@ -262,28 +253,6 @@ void loop()
       help();
     else if(input == "GETDUTYCYCLE" || input == "GETFREQ" || input == "GETRESOLUTION")
       GetData(input);
-  }
-
-  if(SerialBT.available())
-  {
-    String recievedInput = SerialBT.readStringUntil('\n');
-    recievedInput.trim();
-    recievedInput.toUpperCase();
-
-    int spaceIndex = recievedInput.indexOf(' ');
-    if(spaceIndex > 1)
-    {
-      String command = recievedInput.substring(0, spaceIndex);
-      command.toUpperCase();
-      int value = recievedInput.substring(spaceIndex + 1).toInt();
-
-      ExecutCommand(command, value);
-    }
-    else if(recievedInput == "HELP")
-      help();
-    else if(recievedInput == "GETDUTYCYCLE" || recievedInput == "GETFREQ" || recievedInput == "GETRESOLUTION")
-      GetData(recievedInput);
-    delay(20);
   }
 
   yield();
