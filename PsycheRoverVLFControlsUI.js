@@ -5,6 +5,7 @@ function setupControl(sliderId, inputId) {
     const slider = document.getElementById(sliderId);
     const input = document.getElementById(inputId);
 
+    //function to send data from website to esp32 via bluetooth
     function SendValue(val)
     {
         if(sliderId === "frequency" || inputId === "freqInput")
