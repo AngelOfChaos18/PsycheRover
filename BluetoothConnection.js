@@ -1,4 +1,4 @@
-import {UpdatePIData} from "PsycheRoverPIDataUI.js";
+import {UpdatePIData} from "./PsycheRoverPIDataUI.js";
 
 const connectButton = document.getElementById('connectBleButton');
 const disconnectButton = document.getElementById('disconnectBleButton');
