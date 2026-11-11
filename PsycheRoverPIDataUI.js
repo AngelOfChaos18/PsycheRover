@@ -49,6 +49,16 @@ function UpdateMaterialClassification(materialValue)
     materialClassText.textContent = materialValue;
 }
 
+export function UpdatePIData(newData)
+{
+    for(let n = 0; n < 8; n++)
+    {
+        PIDataArray[i][1] = newData[i];
+    }
+
+    DrawGraph();
+}
+
 function UpdateTao(value)
 {
     tauText.textContent = value;

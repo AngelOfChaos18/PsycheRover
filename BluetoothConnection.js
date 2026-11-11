@@ -1,3 +1,5 @@
+import {UpdatePIData} from "PsycheRoverPIDataUI.js";
+
 const connectButton = document.getElementById('connectBleButton');
 const disconnectButton = document.getElementById('disconnectBleButton');
 const vlfControlsButton = document.getElementById('vlfControls');
@@ -11,13 +13,18 @@ const timestampContainer = document.getElementById('timestamp');
 //Define BLE Device Specs
 var deviceName ='PsycheRoverESP32';
 var bleService = '3e878e35-49e2-4e5c-8d32-11dd9b0409d8';
-var ledCharacteristic = '3e878e35-49e2-4e5c-8d32-11dd9b0409d8';
-var sensorCharacteristic= '3e878e35-49e2-4e5c-8d32-11dd9b0409d8';
+var frequencyCharacteristic = '280db291-af91-403c-9a8f-37d83135b49c';
+var resolutionCharacteristic = '9034bce6-0e5b-484a-a281-54633a7704f2';
+var dutyCycleCharacteristicCharacteristic = '2e645218-b656-4a16-92e9-c3d51359c0ad';
+var piDataArrayCharacteristic = 'fda96f74-ad2f-434a-9b01-d7ada3a184fc';
 
 //Global Variables to Handle Bluetooth
 var bleServer;
 var bleServiceFound;
-var sensorCharacteristicFound;
+var piDataCharacteristicFound;
+var dutyCycleCharacteristicFound;
+var resolutionCharacteristicFound;
+var frequencyCharacteristicFound;
 
 // Connect Button (search for BLE Devices only if BLE is available)
 connectButton.addEventListener('click', (event) => {
@@ -115,9 +122,15 @@ function onDisconnected(event)
 function handleCharacteristicChange(event)
 {
     const newValueReceived = new TextDecoder().decode(event.target.value);
-    console.log("Characteristic value changed: ", newValueReceived);
-    retrievedValue.innerHTML = newValueReceived;
-    timestampContainer.innerHTML = getDateTime();
+    console.log("New value arrived from ESP32: ", newValueReceived);
+
+    if(event.target.uuid === piDataArrayCharacteristic)
+    {
+        const dataArray = newValueReceived.split(',').map(Number);
+        console.log(dataArray);
+
+        UpdatePIData(dataArray);
+    }
 }
 
 function writeOnCharacteristic(value)

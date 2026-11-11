@@ -7,13 +7,15 @@ BLEServer* pServer = NULL;
 BLECharacteristic* frequencyCharacteristic = NULL;
 BLECharacteristic* resolutionCharacteristic = NULL;
 BLECharacteristic* dutyCycleCharacteristic = NULL;
+BLECharacteristic* piDataArrayCharacteristic = NULL;
 bool deviceConnected = false;
 bool oldDeviceConnected = false;
 
 #define SERVICE_UUID        "3e878e35-49e2-4e5c-8d32-11dd9b0409d8"
-#define FREQUENCY_CHARACTERISTIC_UUID "3e878e35-49e2-4e5c-8d32-11dd9b0409d8"
-#define RESOLUTION_CHARACTERISTIC_UUID "3e878e35-49e2-4e5c-8d32-11dd9b0409d8"
-#define DUTY_CYCLE_CHARACTERISTIC_UUID "3e878e35-49e2-4e5c-8d32-11dd9b0409d8"
+#define FREQUENCY_CHARACTERISTIC_UUID "280db291-af91-403c-9a8f-37d83135b49c"
+#define RESOLUTION_CHARACTERISTIC_UUID "9034bce6-0e5b-484a-a281-54633a7704f2"
+#define DUTY_CYCLE_CHARACTERISTIC_UUID "2e645218-b656-4a16-92e9-c3d51359c0ad"
+#define PI_DATA_ARRAY_CHARACTERISTIC_UUID "fda96f74-ad2f-434a-9b01-d7ada3a184fc"
 
 static int NUMBER_OF_COMMANDS = 7;
 
@@ -150,6 +152,33 @@ void ExecutCommand(String command, int value)
   }
 }
 
+void GenerateRandomPIValues()
+{
+  String dataString = "";
+
+  float piData[8];
+  float initialValue = random(60, 130) / 10.0;
+  float baseLineValue = 0.01;
+  float decayRate = 0.45;
+
+  for(int i = 0; i < 8; i++)
+  {
+    piData[i] = baseLineValue + (initialValue - baseLineValue) * exp(-i * decayRate);
+
+    if(piData[i] < 0)
+      piData[i] = 0;
+
+    dataString += String(piData[i], 2);
+    if(i < 7)
+      dataString += ", ";
+  }
+
+  piDataArrayCharacteristic->setValue(dataString.c_str());
+  piDataArrayCharacteristic->notify();
+  Serial.print("New value notified: ");
+  Serial.println(dataString);
+}
+
 void setup() 
 {
   Serial.begin(115200);
@@ -185,13 +214,23 @@ void setup()
                       BLECharacteristic::PROPERTY_INDICATE
                     );
 
+  piDataArrayCharacteristic = pService->createCharacteristic(
+                      PI_DATA_ARRAY_CHARACTERISTIC_UUID,
+                      BLECharacteristic::PROPERTY_READ   |
+                      BLECharacteristic::PROPERTY_WRITE  |
+                      BLECharacteristic::PROPERTY_NOTIFY |
+                      BLECharacteristic::PROPERTY_INDICATE
+                    );
+
   frequencyCharacteristic->setCallbacks(new MyCharacteristicCallbacks());
   resolutionCharacteristic->setCallbacks(new MyCharacteristicCallbacks());
   dutyCycleCharacteristic->setCallbacks(new MyCharacteristicCallbacks());
+  piDataArrayCharacteristic->setCallbacks(new MyCharacteristicCallbacks());
 
   frequencyCharacteristic->addDescriptor(new BLE2902());
   resolutionCharacteristic->addDescriptor(new BLE2902());
   dutyCycleCharacteristic->addDescriptor(new BLE2902());
+  piDataArrayCharacteristic->addDescriptor(new BLE2902());
 
   pService->start();
 
@@ -211,10 +250,11 @@ void loop()
 {
   if (deviceConnected) 
   {
-    frequencyCharacteristic->setValue(String(targetFreq).c_str());
-    frequencyCharacteristic->notify();
-    Serial.print("New value notified: ");
-    Serial.println(targetFreq);
+    // frequencyCharacteristic->setValue(String(targetFreq).c_str());
+    // frequencyCharacteristic->notify();
+    // Serial.print("New value notified: ");
+    // Serial.println(targetFreq);
+    GenerateRandomPIValues();
     delay(3000); // bluetooth stack will go into congestion, if too many packets are sent, in 6 hours test i was able to go as low as 3ms
   }
 
