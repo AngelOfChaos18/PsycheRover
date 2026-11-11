@@ -93,7 +93,7 @@ function connectToDevice()
     })
     .then(characteristic => {
         console.log("Characteristic discovered:", characteristic.uuid);
-        sensorCharacteristicFound = characteristic;
+        piDataCharacteristicFound = characteristic;
         characteristic.addEventListener('characteristicvaluechanged', handleCharacteristicChange);
         characteristic.startNotifications();
         console.log("Notifications Started.");
@@ -137,7 +137,7 @@ function writeOnCharacteristic(value)
 {
     if (bleServer && bleServer.connected) 
     {
-        bleServiceFound.getCharacteristic(ledCharacteristic)
+        bleServiceFound.getCharacteristic(frequencyCharacteristic)
         .then(characteristic => {
             console.log("Found the LED characteristic: ", characteristic.uuid);
             const data = new Uint8Array([value]);
@@ -163,9 +163,9 @@ function disconnectDevice()
     console.log("Disconnect Device.");
     if (bleServer && bleServer.connected) 
         {
-        if (sensorCharacteristicFound) 
+        if (piDataCharacteristicFound) 
             {
-            sensorCharacteristicFound.stopNotifications()
+            piDataCharacteristicFound.stopNotifications()
                 .then(() => {
                     console.log("Notifications Stopped");
                     return bleServer.disconnect();
