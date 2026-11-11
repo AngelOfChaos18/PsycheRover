@@ -70,6 +70,7 @@ function UpdateTao(value)
 function DrawGraph()
 {
     ctx.clearRect(0, 0, width, height);
+    console.log("Graph Cleared");
 
     ctx.beginPath();
     ctx.strokeStyle = "#acabab";
@@ -110,7 +111,6 @@ function DrawGraph()
     for(let point = 0; point < rows; point++)
     {
         ctx.lineTo(GetPixelX(PIDataArray[point][0]), GetPixelY(PIDataArray[point][1]));
-        console.log("drawing line to point.");
     }
 
     ctx.stroke();
