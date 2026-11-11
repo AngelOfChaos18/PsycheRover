@@ -133,16 +133,23 @@ function connectToDevice()
     .then(characteristic => {
         console.log("Characteristic discovered:", characteristic.uuid);
         dutyCycleCharacteristicFound = characteristic;
+        return characteristic.readValue();
+    })
+    .then(() => {
         return bleServiceFound.getCharacteristic(frequencyCharacteristic);
     })
     .then(characteristic => {
         console.log("Characteristic discovered:", characteristic.uuid);
         frequencyCharacteristicFound = characteristic;
+        return characteristic.readValue();
+    })
+    .then(() => {
         return bleServiceFound.getCharacteristic(resolutionCharacteristic);
     })
     .then(characteristic => {
         console.log("Characteristic discovered:", characteristic.uuid);
         resolutionCharacteristicFound = characteristic;
+        return characteristic.readValue();
     })
     .catch(error => {
         console.log('Error: ', error);
