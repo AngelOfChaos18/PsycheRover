@@ -89,7 +89,7 @@ function connectToDevice()
     .then(service => {
         bleServiceFound = service;
         console.log("Service discovered:", service.uuid);
-        return service.getCharacteristic(sensorCharacteristic);
+        return service.getCharacteristic(piDataArrayCharacteristic);
     })
     .then(characteristic => {
         console.log("Characteristic discovered:", characteristic.uuid);
