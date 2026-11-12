@@ -14,20 +14,25 @@ uint32_t cyc(){
 
 void shoot(){
     REG_WRITE(GPIO_OUT_W1TS_REG, 1 << TX_PIN);  // Set TX_PIN high
+    //digitalWrite(TX_PIN, HIGH);
     uint32_t t = cyc();                         // Take timestamp of pulse beginning
+    Serial.print("start");
     while (cyc() - t < pulseDuration) {}        // Wait for the pulse duration
+    Serial.print("end");
     REG_WRITE(GPIO_OUT_W1TC_REG, 1 << TX_PIN);  // Clear TX_PIN
+    //digitalWrite(TX_PIN, LOW);
 }
 
 void setup(){
-    Serial.begin(115200);
+    Serial.begin(9600);
     pinMode(TX_PIN, OUTPUT);
     cpu = ESP.getCpuFreqMHz();                  // Get CPU frequency in Mhz
     pulseDuration = PULSE_US * cpu;              // Calculate pulse duration in cycles
+    digitalWrite(TX_PIN, LOW);
 }
 
 void loop(){
-    delay(500);  // Wait for 1 second before shooting the pulse
+    delay(50);  // Wait for 1 second before shooting the pulse
     shoot();
-    delay(500);
+    delay(50);
 }
