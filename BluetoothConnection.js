@@ -205,6 +205,7 @@ export function writeOnCharacteristic(characteristicFound, value)
         characteristicFound.writeValue(data)
         .then(() => {
             console.log("Value successfully written:", value);
+            conosle.log("to characteristic:", characteristicFound.uuid);
         })
         .catch(error => {
             console.error("Error writing to the characteristic: ", error);

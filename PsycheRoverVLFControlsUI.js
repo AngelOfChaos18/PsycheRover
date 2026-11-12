@@ -18,26 +18,32 @@ function setupControl(sliderId, inputId)
         {
             case 'frequency':
                 writeOnCharacteristic(frequencyCharacteristicFound, val);
+                console.log("updating frequency with:", val);
                 break;
             case 'dutyCycle':
                 writeOnCharacteristic(dutyCycleCharacteristicFound, val);
+                console.log("updating duty cycle with:", val);
                 break;
             case 'resolution':
                 writeOnCharacteristic(resolutionCharacteristicFound, val);
+                console.log("updating resolution with:", val);
                 break;
         }
     }
 
     freqUpdateBtn.addEventListener('click', () => {
         SendValue(freqValue, 'frequency');
+        console.log("frequency update button pressed.");
     });
 
     dutyCycleUpdateBtn.addEventListener('click', () => {
         SendValue(dutyCycleValue, 'dutyCycle');
+        console.log("duty cycle update button pressed");
     });
 
     resolutionUpdateBtn.addEventListener('click', () => {
         SendValue(resolutionValue, 'resolution');
+        console.log("resolution update button pressed");
     });
 
     slider.addEventListener('input', (e) => {
