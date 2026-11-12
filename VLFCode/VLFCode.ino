@@ -93,7 +93,7 @@ class MyCharacteristicCallbacks : public BLECharacteristicCallbacks
     if (value.length() > 0) 
     {
       Serial.print("Characteristic event, written: ");
-      Serial.println(static_cast<int>(value[0]));
+      Serial.println(value[0]);
 
       int receivedValue = static_cast<int>(value[0]);
 
@@ -108,27 +108,6 @@ class MyCharacteristicCallbacks : public BLECharacteristicCallbacks
     }
   }
 };
-
-void ExecutCommand(String command, int value)
-{
-  if(command == "CHANGEDUTYCYCLE")
-  {
-    String commandText = String(command + " " + String(value));
-    changeDutyCycle(value);
-  }
-  else if(command == "CHANGEFREQ")
-  {
-      changeFreq(value);
-  }
-  else if(command == "CHANGERESOLUTION")
-  {
-      changeResolution(value);
-  }
-  else
-  {
-    Serial.println("Unknown command, for a list of commands enter 'help'");
-  }
-}
 
 void GenerateRandomPIValues()
 {
@@ -167,29 +146,23 @@ void setup()
   pServer->setCallbacks(new MyServerCallbacks());
 
   BLEService *pService = pServer->createService(SERVICE_UUID);
-
+  
   frequencyCharacteristic = pService->createCharacteristic(
                       FREQUENCY_CHARACTERISTIC_UUID,
                       BLECharacteristic::PROPERTY_READ   |
-                      BLECharacteristic::PROPERTY_WRITE  |
-                      BLECharacteristic::PROPERTY_NOTIFY |
-                      BLECharacteristic::PROPERTY_INDICATE
+                      BLECharacteristic::PROPERTY_WRITE
                     );
 
   resolutionCharacteristic = pService->createCharacteristic(
                       RESOLUTION_CHARACTERISTIC_UUID,
                       BLECharacteristic::PROPERTY_READ   |
-                      BLECharacteristic::PROPERTY_WRITE  |
-                      BLECharacteristic::PROPERTY_NOTIFY |
-                      BLECharacteristic::PROPERTY_INDICATE
+                      BLECharacteristic::PROPERTY_WRITE
                     );
 
   dutyCycleCharacteristic = pService->createCharacteristic(
                       DUTY_CYCLE_CHARACTERISTIC_UUID,
                       BLECharacteristic::PROPERTY_READ   |
-                      BLECharacteristic::PROPERTY_WRITE  |
-                      BLECharacteristic::PROPERTY_NOTIFY |
-                      BLECharacteristic::PROPERTY_INDICATE
+                      BLECharacteristic::PROPERTY_WRITE
                     );
 
   piDataArrayCharacteristic = pService->createCharacteristic(
@@ -223,9 +196,6 @@ void setup()
   materialClassificationCharacteristic->setCallbacks(new MyCharacteristicCallbacks());
   tauValueCharacteristic->setCallbacks(new MyCharacteristicCallbacks());
 
-  frequencyCharacteristic->addDescriptor(new BLE2902());
-  resolutionCharacteristic->addDescriptor(new BLE2902());
-  dutyCycleCharacteristic->addDescriptor(new BLE2902());
   piDataArrayCharacteristic->addDescriptor(new BLE2902());
   materialClassificationCharacteristic->addDescriptor(new BLE2902());
   tauValueCharacteristic->addDescriptor(new BLE2902());

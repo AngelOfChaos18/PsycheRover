@@ -1,9 +1,15 @@
 import { writeOnCharacteristic } from "./BluetoothConnection.js";
 import { frequencyCharacteristicFound, dutyCycleCharacteristicFound , resolutionCharacteristicFound } from "./BluetoothConnection.js";
 
-function setupControl(sliderId, inputId) {
+function setupControl(sliderId, inputId) 
+{
     const slider = document.getElementById(sliderId);
     const input = document.getElementById(inputId);
+    const freqUpdateBtn = document.getElementById('frequencyUpdateBtn');
+    const dutyCycleUpdateBtn = document.getElementById('dutyCycleUpdateBtn');
+    const resolutionUpdateBtn = document.getElementById('resolutionUpdateBtn');
+
+    let freqValue = 0, dutyCycleValue = 0, resolutionValue = 0;
 
     //function to send data from website to esp32 via bluetooth
     function SendValue(val)
@@ -16,9 +22,35 @@ function setupControl(sliderId, inputId) {
             writeOnCharacteristic(resolutionCharacteristicFound, val);
     }
 
+    freqUpdateBtn.addEventListener(() => {
+        SendValue(freqValue);
+    });
+
+    dutyCycleUpdateBtn.addEventListener(() => {
+        SendValue(dutyCycleValue);
+    });
+
+    resolutionUpdateBtn.addEventListener(() => {
+        SendValue(resolutionValue);
+    });
+
     slider.addEventListener('input', (e) => {
         input.value = e.target.value;
-        SendValue(input.value);
+        switch(sliderId)
+        {
+            case 'frequency':
+                freqValue = input.value;
+                break;
+            case 'dutyCycle':
+                dutyCycleValue = input.valule;
+                break;
+            case 'resolution':
+                resolutionValue = input.value;
+                break;
+            default:
+                console.error("SliderId not found.");
+                break;
+        }
     });
 
     input.addEventListener('input', (e) => {
@@ -31,7 +63,6 @@ function setupControl(sliderId, inputId) {
         if (val > max) val = max;
 
         slider.value = val;
-        SendValue(val);
     });
 }
 
