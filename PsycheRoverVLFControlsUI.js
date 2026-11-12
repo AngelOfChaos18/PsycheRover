@@ -22,15 +22,15 @@ function setupControl(sliderId, inputId)
             writeOnCharacteristic(resolutionCharacteristicFound, val);
     }
 
-    freqUpdateBtn.addEventListener(() => {
+    freqUpdateBtn.addEventListener('click', () => {
         SendValue(freqValue);
     });
 
-    dutyCycleUpdateBtn.addEventListener(() => {
+    dutyCycleUpdateBtn.addEventListener('click', () => {
         SendValue(dutyCycleValue);
     });
 
-    resolutionUpdateBtn.addEventListener(() => {
+    resolutionUpdateBtn.addEventListener('click', () => {
         SendValue(resolutionValue);
     });
 
