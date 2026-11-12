@@ -14,7 +14,7 @@ const uint32_t GATE_US         = 5;    // strobe width
 const uint32_t PULSE_US        = 100;  // TX on time
 const uint32_t FLAT_TIMEOUT_US = 1000000;  // give up if the comparator never flips
 const int  READS     = 4;      // ADC reads per channel 
-const long REPEAT_MS = 2000;   // time between measurements
+const long REPEAT_MS = 10000;   // time between measurements
 
 uint32_t cpu;                                   // CPU cycles per microsecond
 uint32_t delayCyc[N_GATES], gateCyc, pulseCyc, timeoutCyc;
@@ -68,7 +68,7 @@ bool shoot(float &flatUs) {
 void readAll(float mv[N_GATES]) {
   for (int k = 0; k < N_GATES; k++) {
     setChannel(k);                                  // Select gate k for reading
-    delayMicroseconds(2);                           // Wait for mux to settle
+    delayMicroseconds(100);                         // Wait for mux to settle
     long sum = 0;                 
     for (int i = 0; i < READS; i++) {               // Read ADC a few times to eliminate errors
       sum += analogReadMilliVolts(ADC_PIN);             
@@ -84,10 +84,16 @@ void setup() {
   pinMode(COMP_PIN, INPUT);
 
   uint32_t all = 0;
-  for (int b = 0; b < 3; b++) { pinMode(SEL_PIN[b], OUTPUT); all |= 1 << SEL_PIN[b]; }
+  for (int b = 0; b < 3; b++) { 
+    pinMode(SEL_PIN[b], OUTPUT); all |= 1 << SEL_PIN[b]; 
+  }
   for (int k = 0; k < N_GATES; k++) {
     selSet[k] = 0;
-    for (int b = 0; b < 3; b++) if (k & (1 << b)) selSet[k] |= 1 << SEL_PIN[b];
+    for (int b = 0; b < 3; b++){
+      if (k & (1 << b)) {
+        selSet[k] |= 1 << SEL_PIN[b];
+      }
+    }
     selClr[k] = all & ~selSet[k];
   }
 
@@ -111,9 +117,9 @@ void loop() {
 
   readAll(mv);                              // Read the held voltages
 
-  Serial.printf("flat_us=%.2f\n", flat);
+  Serial.printf("flat_us=%f\n", flat);
   for (int k = 0; k < N_GATES; k++)         // time since TX-off (us), volts
-    Serial.printf("%.2f,%.4f\n", flat + DELAY_US[k] + GATE_US, mv[k] / 1000.0);
+    Serial.printf("%f,%f\n", flat + DELAY_US[k] + GATE_US, mv[k] / 1000.0);
   Serial.println("---");
 
   delay(REPEAT_MS);
