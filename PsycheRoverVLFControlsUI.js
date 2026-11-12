@@ -12,26 +12,32 @@ function setupControl(sliderId, inputId)
     let freqValue = 0, dutyCycleValue = 0, resolutionValue = 0;
 
     //function to send data from website to esp32 via bluetooth
-    function SendValue(val)
+    function SendValue(val, parameter)
     {
-        if(sliderId === "frequency" || inputId === "freqInput")
-            writeOnCharacteristic(frequencyCharacteristicFound, val);
-        if(sliderId === "dutyCycle" || inputId === "dutyCycleInput" )
-            writeOnCharacteristic(dutyCycleCharacteristicFound, val);
-        if(sliderId === "resolution" || inputId === 'resolutionInput')
-            writeOnCharacteristic(resolutionCharacteristicFound, val);
+        switch(parameter)
+        {
+            case 'frequency':
+                writeOnCharacteristic(frequencyCharacteristicFound, val);
+                break;
+            case 'dutyCycle':
+                writeOnCharacteristic(dutyCycleCharacteristicFound, val);
+                break;
+            case 'resolution':
+                writeOnCharacteristic(resolutionCharacteristicFound, val);
+                break;
+        }
     }
 
     freqUpdateBtn.addEventListener('click', () => {
-        SendValue(freqValue);
+        SendValue(freqValue, 'frequency');
     });
 
     dutyCycleUpdateBtn.addEventListener('click', () => {
-        SendValue(dutyCycleValue);
+        SendValue(dutyCycleValue, 'dutyCycle');
     });
 
     resolutionUpdateBtn.addEventListener('click', () => {
-        SendValue(resolutionValue);
+        SendValue(resolutionValue, 'resolution');
     });
 
     slider.addEventListener('input', (e) => {

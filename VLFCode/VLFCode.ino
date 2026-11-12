@@ -93,7 +93,7 @@ class MyCharacteristicCallbacks : public BLECharacteristicCallbacks
     if (value.length() > 0) 
     {
       Serial.print("Characteristic event, written: ");
-      Serial.println(value[0]);
+      Serial.println(value);
 
       int receivedValue = static_cast<int>(value[0]);
 
