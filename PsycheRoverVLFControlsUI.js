@@ -31,17 +31,17 @@ function setupControl(sliderId, inputId)
         }
     }
 
-    freqUpdateBtn.addEventListener('click', () => {
+    freqUpdateBtn.addEventListener('click', (event) => {
         SendValue(freqValue, 'frequency');
         console.log("frequency update button pressed.");
     });
 
-    dutyCycleUpdateBtn.addEventListener('click', () => {
+    dutyCycleUpdateBtn.addEventListener('click', (event) => {
         SendValue(dutyCycleValue, 'dutyCycle');
         console.log("duty cycle update button pressed");
     });
 
-    resolutionUpdateBtn.addEventListener('click', () => {
+    resolutionUpdateBtn.addEventListener('click', (event) => {
         SendValue(resolutionValue, 'resolution');
         console.log("resolution update button pressed");
     });
