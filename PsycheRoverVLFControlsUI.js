@@ -9,7 +9,7 @@ function setupControl(sliderId, inputId)
     const dutyCycleUpdateBtn = document.getElementById('dutyCycleUpdateBtn');
     const resolutionUpdateBtn = document.getElementById('resolutionUpdateBtn');
 
-    let freqValue = 0, dutyCycleValue = 0, resolutionValue = 0;
+    let freqValue = 6210, dutyCycleValue = 50, resolutionValue = 12;
 
     //function to send data from website to esp32 via bluetooth
     function SendValue(val, parameter)

@@ -204,8 +204,8 @@ export function writeOnCharacteristic(characteristicFound, value)
         const data = new TextEncoder().encode(String(value));
         characteristicFound.writeValue(data)
         .then(() => {
-            console.log("Value successfully written:", value);
-            conosle.log("to characteristic:", characteristicFound.uuid);
+            console.log("Value successfully written:", data);
+            console.log("to characteristic:", characteristicFound.uuid);
         })
         .catch(error => {
             console.error("Error writing to the characteristic: ", error);
