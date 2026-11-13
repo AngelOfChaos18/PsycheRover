@@ -1,6 +1,11 @@
 import { writeOnCharacteristic } from "./BluetoothConnection.js";
 import { frequencyCharacteristicFound, dutyCycleCharacteristicFound , resolutionCharacteristicFound } from "./BluetoothConnection.js";
 
+
+const freqUpdateBtn = document.getElementById('frequencyUpdateBtn');
+const dutyCycleUpdateBtn = document.getElementById('dutyCycleUpdateBtn');
+const resolutionUpdateBtn = document.getElementById('resolutionUpdateBtn');
+
 let freqValue = 6210, dutyCycleValue = 50, resolutionValue = 12;
 
 freqUpdateBtn.addEventListener('click', (event) => {
@@ -18,33 +23,30 @@ resolutionUpdateBtn.addEventListener('click', (event) => {
     console.log("resolution update button pressed");
 });
 
+//function to send data from website to esp32 via bluetooth
+function SendValue(val, parameter)
+{
+    switch(parameter)
+    {
+        case 'frequency':
+            writeOnCharacteristic(frequencyCharacteristicFound, val);
+            console.log("updating frequency with:", val);
+            break;
+        case 'dutyCycle':
+            writeOnCharacteristic(dutyCycleCharacteristicFound, val);
+            console.log("updating duty cycle with:", val);
+            break;
+        case 'resolution':
+            writeOnCharacteristic(resolutionCharacteristicFound, val);
+            console.log("updating resolution with:", val);
+            break;
+    }
+}
+
 function setupControl(sliderId, inputId) 
 {
     const slider = document.getElementById(sliderId);
     const input = document.getElementById(inputId);
-    const freqUpdateBtn = document.getElementById('frequencyUpdateBtn');
-    const dutyCycleUpdateBtn = document.getElementById('dutyCycleUpdateBtn');
-    const resolutionUpdateBtn = document.getElementById('resolutionUpdateBtn');
-
-    //function to send data from website to esp32 via bluetooth
-    function SendValue(val, parameter)
-    {
-        switch(parameter)
-        {
-            case 'frequency':
-                writeOnCharacteristic(frequencyCharacteristicFound, val);
-                console.log("updating frequency with:", val);
-                break;
-            case 'dutyCycle':
-                writeOnCharacteristic(dutyCycleCharacteristicFound, val);
-                console.log("updating duty cycle with:", val);
-                break;
-            case 'resolution':
-                writeOnCharacteristic(resolutionCharacteristicFound, val);
-                console.log("updating resolution with:", val);
-                break;
-        }
-    }
 
     slider.addEventListener('input', (e) => {
         input.value = e.target.value;
