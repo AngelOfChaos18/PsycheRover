@@ -57,7 +57,7 @@ function setupControl(sliderId, inputId)
                 freqValue = input.value;
                 break;
             case 'dutyCycle':
-                dutyCycleValue = input.valule;
+                dutyCycleValue = input.value;
                 break;
             case 'resolution':
                 resolutionValue = input.value;
