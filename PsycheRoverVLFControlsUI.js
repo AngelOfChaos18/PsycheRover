@@ -35,6 +35,7 @@ function SendValue(val, parameter)
         case 'dutyCycle':
             writeOnCharacteristic(dutyCycleCharacteristicFound, val);
             console.log("updating duty cycle with:", val);
+            console.log("value of dutyCycleValue", dutyCycleValue);
             break;
         case 'resolution':
             writeOnCharacteristic(resolutionCharacteristicFound, val);
@@ -77,6 +78,21 @@ function setupControl(sliderId, inputId)
         if (val > max) val = max;
 
         slider.value = val;
+        switch(inputId)
+        {
+            case 'freqInput':
+                freqValue = val;
+                break;
+            case 'dutyCycleInput':
+                dutyCycleValue = val;
+                break;
+            case 'resolutionInput':
+                resolutionValue = val;
+                break;
+            default:
+                console.error("inputId not found.");
+                break;
+        }
     });
 }
 
