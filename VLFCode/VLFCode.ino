@@ -23,11 +23,15 @@ bool oldDeviceConnected = false;
 
 String deviceName = "PsycheRoverESP32";
 
-uint32_t targetFreq = 5270;
+uint32_t targetFreq = 6200;
 uint8_t LEDCPin = 18;
+uint8_t batVoltPin = 34;
 uint8_t resolution = 12;
 uint32_t maxDutySteps = (1 << resolution) - 1;
-uint32_t dutyCycle = maxDutySteps * 0.25;
+uint32_t dutyCycle = maxDutySteps * 0.05;
+float minVoltage = 3.0;
+float maxVoltage = 4.2;
+uint8_t numberOfBatteries = 6;
 
 class MyServerCallbacks: public BLEServerCallbacks 
 {
@@ -214,6 +218,11 @@ void setup()
   Serial.println("Starting VLF Detector software.");
 }
 
+void CheckBatteryCharge()
+{
+  float currentCharge = analogRead(batVoltPin);
+}
+
 void loop() 
 {
   if (deviceConnected) 
@@ -237,6 +246,8 @@ void loop()
     oldDeviceConnected = deviceConnected;
     Serial.println("Device Connected");
   }
+
+
 
   yield();
 }
