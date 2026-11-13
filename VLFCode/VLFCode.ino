@@ -95,7 +95,7 @@ class MyCharacteristicCallbacks : public BLECharacteristicCallbacks
       Serial.print("Characteristic event, written: ");
       Serial.println(value);
 
-      int receivedValue = static_cast<int>(value[0]);
+      int receivedValue = value.toInt();
 
       if(pCharacteristic == frequencyCharacteristic)
         changeFreq(receivedValue);

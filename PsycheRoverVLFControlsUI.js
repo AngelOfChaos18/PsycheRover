@@ -1,6 +1,23 @@
 import { writeOnCharacteristic } from "./BluetoothConnection.js";
 import { frequencyCharacteristicFound, dutyCycleCharacteristicFound , resolutionCharacteristicFound } from "./BluetoothConnection.js";
 
+let freqValue = 6210, dutyCycleValue = 50, resolutionValue = 12;
+
+freqUpdateBtn.addEventListener('click', (event) => {
+    SendValue(freqValue, 'frequency');
+    console.log("frequency update button pressed.");
+});
+
+dutyCycleUpdateBtn.addEventListener('click', (event) => {
+    SendValue(dutyCycleValue, 'dutyCycle');
+    console.log("duty cycle update button pressed");
+});
+
+resolutionUpdateBtn.addEventListener('click', (event) => {
+    SendValue(resolutionValue, 'resolution');
+    console.log("resolution update button pressed");
+});
+
 function setupControl(sliderId, inputId) 
 {
     const slider = document.getElementById(sliderId);
@@ -8,8 +25,6 @@ function setupControl(sliderId, inputId)
     const freqUpdateBtn = document.getElementById('frequencyUpdateBtn');
     const dutyCycleUpdateBtn = document.getElementById('dutyCycleUpdateBtn');
     const resolutionUpdateBtn = document.getElementById('resolutionUpdateBtn');
-
-    let freqValue = 6210, dutyCycleValue = 50, resolutionValue = 12;
 
     //function to send data from website to esp32 via bluetooth
     function SendValue(val, parameter)
@@ -30,21 +45,6 @@ function setupControl(sliderId, inputId)
                 break;
         }
     }
-
-    freqUpdateBtn.addEventListener('click', (event) => {
-        SendValue(freqValue, 'frequency');
-        console.log("frequency update button pressed.");
-    });
-
-    dutyCycleUpdateBtn.addEventListener('click', (event) => {
-        SendValue(dutyCycleValue, 'dutyCycle');
-        console.log("duty cycle update button pressed");
-    });
-
-    resolutionUpdateBtn.addEventListener('click', (event) => {
-        SendValue(resolutionValue, 'resolution');
-        console.log("resolution update button pressed");
-    });
 
     slider.addEventListener('input', (e) => {
         input.value = e.target.value;
